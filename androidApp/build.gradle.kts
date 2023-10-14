@@ -47,4 +47,5 @@ dependencies {
     implementation("androidx.compose.material:material:1.4.3")
     implementation("androidx.activity:activity-compose:1.7.1")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation("com.github.skydoves:cloudy:0.1.2")
 }
