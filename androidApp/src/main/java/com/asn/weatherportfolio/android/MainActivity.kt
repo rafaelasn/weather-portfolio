@@ -5,24 +5,27 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -32,8 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import com.skydoves.cloudy.Cloudy
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,22 +94,30 @@ fun WeatherNow() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(281.dp)
-
-//            Modifier
-//                .height(280.dp)
-//                .fillMaxWidth()
         ) {
             val tempCardMarginStart = 16.dp
 
-            ConstraintLayout {
-                val (timerText, tempText, feelsText) = createRefs()
+            Box(
+                Modifier
+                    .drawWithContent {
+                        drawContent()
+                    }
+            ) {
+
+                Image(
+                    painter = ColorPainter(Color.Gray),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(10.dp)
+                        .alpha(0.5f)
+                )
 
                 Text(
                     text = "14:11",
-                    modifier = Modifier.constrainAs(timerText) {
-                        top.linkTo(parent.top, margin = 8.dp)
-                        start.linkTo(parent.start, margin = tempCardMarginStart)
-                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(tempCardMarginStart, 8.dp),
                     style = TextStyle(
                         fontSize = 30.sp,
                         fontFamily = FontFamily(Font(R.font.saira)),
@@ -117,24 +126,24 @@ fun WeatherNow() {
                     )
                 )
 
-                Text(text = "33ºC",
+                Text(
+                    text = "33ºC",
                     style = TextStyle(
                         fontSize = 100.sp,
                         fontFamily = FontFamily(Font(R.font.saira)),
                         fontWeight = FontWeight(600),
                         color = Color(0xFFFFFFFF)
                     ),
-                    modifier = Modifier.constrainAs(tempText) {
-                        bottom.linkTo(parent.bottom, margin = 26.dp)
-                        start.linkTo(parent.start, margin = tempCardMarginStart)
-                    })
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(tempCardMarginStart, 12.dp)
+                )
 
                 Text(
                     text = "Sensação térmica: 47ºC",
-                    modifier = Modifier.constrainAs(feelsText) {
-                        bottom.linkTo(parent.bottom, margin = 24.dp)
-                        start.linkTo(parent.start, tempCardMarginStart)
-                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(tempCardMarginStart, 24.dp),
                     style = TextStyle(
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.saira)),
