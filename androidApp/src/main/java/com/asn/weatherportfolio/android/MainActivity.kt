@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,8 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -57,7 +56,7 @@ fun MainContent() {
     ) {
         DinamicBackground()
 
-        Column {
+        Column(modifier = Modifier.padding(20.dp)) {
             WeatherNow()
             ForecastWeather()
         }
@@ -75,9 +74,7 @@ fun DinamicBackground() {
 
 @Composable
 fun WeatherNow() {
-    Column(
-        modifier = Modifier.padding(12.dp)
-    ) {
+    Column {
 
         Row(Modifier.padding(8.dp)) {
             Icon(
@@ -107,21 +104,9 @@ fun WeatherNow() {
         ) {
             val tempCardMarginStart = 16.dp
 
-            Box(
-                Modifier
-                    .drawWithContent {
-                        drawContent()
-                    }
-            ) {
+            Box {
 
-                Image(
-                    painter = ColorPainter(Color.Gray),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .blur(10.dp)
-                        .alpha(0.5f)
-                )
+                TransparentBackground()
 
                 Text(
                     text = "14:11",
@@ -167,6 +152,17 @@ fun WeatherNow() {
 }
 
 @Composable
+fun TransparentBackground() {
+    Image(
+        painter = ColorPainter(Color.Black),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(0.3f)
+    )
+}
+
+@Composable
 fun ForecastWeather() {
     Column {
         Text(
@@ -176,26 +172,111 @@ fun ForecastWeather() {
                 fontFamily = FontFamily(Font(R.font.saira)),
                 fontWeight = FontWeight(700),
                 color = Color(0xFFFFFFFF),
-            )
+            ),
+            modifier = Modifier.padding(12.dp)
         )
 
         for (i in 1..4) {
             ForecastDay()
         }
     }
-
 }
 
 @Composable
 fun ForecastDay() {
-    Icon(
-        painter = painterResource(id = R.drawable.sun_icon),
-        tint = Color.White,
-        contentDescription = null,
-        modifier = Modifier
-            .width(54.dp)
-            .height(54.dp)
+    Row(
+        modifier = Modifier.padding(vertical = 5.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.sun_icon),
+            tint = Color.White,
+            contentDescription = null,
+            modifier = Modifier
+                .width(54.dp)
+                .height(54.dp)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Card(
+            border = BorderStroke(2.dp, Color.White),
+            shape = RoundedCornerShape(size = 10.dp),
+            backgroundColor = Color.Transparent,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+        ) {
+            TransparentBackground()
+
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                ForecastDay(10, Modifier.align(Alignment.CenterStart))
+                ForecastMaximum(10, Modifier.align(Alignment.Center))
+                ForecastMinimum(10, Modifier.align(Alignment.CenterEnd))
+            }
+        }
+    }
+}
+
+@Composable
+fun ForecastDay(day: Int, modifier: Modifier) {
+    Text(
+        text = "Hoje",
+        style = TextStyle(
+            fontSize = 20.sp,
+            fontFamily = FontFamily(Font(R.font.saira)),
+            fontWeight = FontWeight(400),
+            color = Color(0xFFFFFFFF),
+        ),
+        modifier = modifier
     )
+}
+
+@Composable
+fun ForecastMaximum(max: Int, modifier: Modifier) {
+    Row (modifier = modifier) {
+        Icon(
+            painter = painterResource(id = R.drawable.arrow_narrow_up_icon),
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.height(24.dp).align(Alignment.CenterVertically)
+        )
+
+        Text(
+            text = "${max}º",
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.saira)),
+                fontWeight = FontWeight(400),
+                color = Color(0xFFFFFFFF),
+            )
+        )
+    }
+}
+
+@Composable
+fun ForecastMinimum(min: Int, modifier: Modifier) {
+    Row (modifier = modifier) {
+        Icon(
+            painter = painterResource(id = R.drawable.arrow_narrow_down_icon),
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.height(24.dp).align(Alignment.CenterVertically)
+        )
+
+        Text(
+            text = "${min}º",
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.saira)),
+                fontWeight = FontWeight(400),
+                color = Color(0xFFFFFFFF),
+            )
+        )
+    }
 }
 
 @Preview
