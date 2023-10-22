@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -54,13 +55,22 @@ fun MainContent() {
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.cc453037a0e4830036d74baf41717fc9),
-            contentDescription = "City background",
-            contentScale = ContentScale.Crop
-        )
-        WeatherNow()
+        DinamicBackground()
+
+        Column {
+            WeatherNow()
+            ForecastWeather()
+        }
     }
+}
+
+@Composable
+fun DinamicBackground() {
+    Image(
+        painter = painterResource(id = R.drawable.cc453037a0e4830036d74baf41717fc9),
+        contentDescription = "City background",
+        contentScale = ContentScale.Crop
+    )
 }
 
 @Composable
@@ -157,8 +167,35 @@ fun WeatherNow() {
 }
 
 @Composable
-fun GreetingView(text: String) {
-    Text(text = text)
+fun ForecastWeather() {
+    Column {
+        Text(
+            text = "Próximas previsões",
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.saira)),
+                fontWeight = FontWeight(700),
+                color = Color(0xFFFFFFFF),
+            )
+        )
+
+        for (i in 1..4) {
+            ForecastDay()
+        }
+    }
+
+}
+
+@Composable
+fun ForecastDay() {
+    Icon(
+        painter = painterResource(id = R.drawable.sun_icon),
+        tint = Color.White,
+        contentDescription = null,
+        modifier = Modifier
+            .width(54.dp)
+            .height(54.dp)
+    )
 }
 
 @Preview
