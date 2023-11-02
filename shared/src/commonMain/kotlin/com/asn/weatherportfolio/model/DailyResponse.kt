@@ -11,4 +11,22 @@ data class DailyResponse(
     @SerialName("temperature_2m_min")               var tempMin: ArrayList<Double> = arrayListOf(),
     @SerialName("precipitation_probability_max")    var precipitationProbability: ArrayList<Int> = arrayListOf(),
     @SerialName("windspeed_10m_max")                var windSpeed: ArrayList<Double> = arrayListOf()
-)
+) {
+    fun toDailyWeather() : List<DailyWeather> {
+        val dailyWeatherList = mutableListOf<DailyWeather>()
+
+        for (i in tempMax.indices) {
+            dailyWeatherList.add(
+                DailyWeather(
+                    time[i],
+                    weatherCode[i],
+                    tempMax[i],
+                    tempMin[i],
+                    precipitationProbability[i],
+                    windSpeed[i]
+                )
+            )
+        }
+        return dailyWeatherList
+    }
+}
