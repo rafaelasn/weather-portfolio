@@ -27,6 +27,7 @@ data class DailyResponse(
                 )
             )
         }
+
         return dailyWeatherList
     }
 }
