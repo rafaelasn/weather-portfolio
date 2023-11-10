@@ -47,6 +47,8 @@ dependencies {
     implementation("androidx.compose.material:material:1.4.3")
     implementation("androidx.activity:activity-compose:1.7.1")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation("io.ktor:ktor-client-okhttp:2.3.5")
+    implementation("io.ktor:ktor-client-android:2.3.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("io.insert-koin:koin-android:3.2.0")
+    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
 }
