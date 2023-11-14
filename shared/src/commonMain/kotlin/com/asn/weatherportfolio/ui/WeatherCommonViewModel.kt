@@ -1,28 +1,32 @@
 package com.asn.weatherportfolio.ui
 
-import com.asn.weatherportfolio.model.WeatherResponse
+import com.asn.weatherportfolio.model.CurrentWeather
+import com.asn.weatherportfolio.model.DailyWeather
 import com.asn.weatherportfolio.repository.WeatherRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class WeatherCommonViewModel() : ViewModel() {
-
     private val repository = WeatherRepository()
+    var weatherStateFlow: MutableStateFlow<UiState?> = MutableStateFlow(null)
 
-    private val weatherStateFlow: MutableStateFlow<UiState> = MutableStateFlow(UiState.Initial)
+    init {
+        getWeather()
+    }
 
-    fun getWeather() {
+    private fun getWeather() {
+        weatherStateFlow.value = UiState.Loading
         viewModelScope.launch {
             repository.getWeatherFromRemote().collect {
-                weatherStateFlow.value = UiState.Success(it)
+                val dailyWeather = it.dailyResponse?.toDailyWeather()
+                weatherStateFlow.value = UiState.Success(it.currentWeather, dailyWeather)
             }
         }
     }
 }
 
 sealed class UiState {
-    object Initial : UiState()
-    data class Success(val value: WeatherResponse) : UiState()
+    object Loading : UiState()
+    data class Success(val currentWeather: CurrentWeather?, val forecastWeather: List<DailyWeather>?) : UiState()
 }
