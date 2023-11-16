@@ -11,14 +11,10 @@ class WeatherCommonViewModel() : ViewModel() {
     private val repository = WeatherRepository()
     var weatherStateFlow: MutableStateFlow<UiState?> = MutableStateFlow(null)
 
-    init {
-        getWeather()
-    }
-
-    private fun getWeather() {
+    fun getWeather(latitude: Double, longitude: Double) {
         weatherStateFlow.value = UiState.Loading
         viewModelScope.launch {
-            repository.getWeatherFromRemote().collect {
+            repository.getWeatherFromRemote(latitude, longitude).collect {
                 val dailyWeather = it.dailyResponse?.toDailyWeather()
                 weatherStateFlow.value = UiState.Success(it.currentWeather, dailyWeather)
             }
