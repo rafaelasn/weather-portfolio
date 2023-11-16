@@ -9,10 +9,7 @@ class WeatherRepository() {
 
     private val api = RemoteDataSource()
 
-    suspend fun getWeatherFromRemote() = flow {
-        val latitude = -20.0
-        val longitude = -54.0
-
+    suspend fun getWeatherFromRemote(latitude: Double, longitude: Double) = flow {
         emit(api.getWeatherFromApi(latitude, longitude))
     }.flowOn(Dispatchers.IO)
 }
