@@ -1,7 +1,10 @@
 package com.asn.weatherportfolio.android
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -21,6 +24,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -32,39 +37,95 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.asn.weatherportfolio.model.CurrentWeather
+import com.asn.weatherportfolio.model.DailyWeather
+import com.asn.weatherportfolio.ui.UiState
+import com.asn.weatherportfolio.ui.WeatherCommonViewModel
+import com.google.android.gms.location.LocationServices
+import io.ktor.util.date.WeekDay
+import kotlinx.coroutines.launch
+import java.util.Calendar
+import kotlin.math.roundToInt
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+
+    private val viewModel = WeatherCommonViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val viewState by viewModel.weatherStateFlow.collectAsState()
+            requestLocationPermission(this)
             MyApplicationTheme {
-                MainContent()
+                when (viewState) {
+                    is UiState.Success -> {
+                        with(viewState as UiState.Success) {
+                            MainContent(this.currentWeather, this.forecastWeather)
+                        }
+                    }
+
+                    is UiState.Loading -> {}
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            99 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    setupLocationClient()
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupLocationClient() {
+        val locationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        lifecycleScope.launch {
+            val location = locationClient.lastLocation
+            location.addOnCompleteListener {
+                viewModel.updateLocation(location.result.latitude, location.result.longitude)
             }
         }
     }
 }
 
+private fun requestLocationPermission(context: Activity) {
+    requestPermissions(context, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 99)
+}
+
 @Composable
-fun MainContent() {
+fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeather>?) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        DinamicBackground()
+        DynamicBackground()
 
         Column(modifier = Modifier.padding(20.dp)) {
-            WeatherNow()
-            ForecastWeather()
+            WeatherNow(currentWeather)
+            ForecastWeather(forecastWeather)
         }
     }
 }
 
 @Composable
-fun DinamicBackground() {
+fun DynamicBackground() {
     Image(
         painter = painterResource(id = R.drawable.cc453037a0e4830036d74baf41717fc9),
         contentDescription = "City background",
@@ -73,7 +134,7 @@ fun DinamicBackground() {
 }
 
 @Composable
-fun WeatherNow() {
+fun WeatherNow(currentWeather: CurrentWeather?) {
     Column {
 
         Row(Modifier.padding(8.dp)) {
@@ -122,7 +183,7 @@ fun WeatherNow() {
                 )
 
                 Text(
-                    text = "33ºC",
+                    text = "${currentWeather?.currentTemp?.roundToInt()}ºC",
                     style = TextStyle(
                         fontSize = 100.sp,
                         fontFamily = FontFamily(Font(R.font.saira)),
@@ -135,7 +196,7 @@ fun WeatherNow() {
                 )
 
                 Text(
-                    text = "Sensação térmica: 47ºC",
+                    text = "Sensação térmica: ${currentWeather?.feelsLikeTemp?.roundToInt()}ºC",
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(tempCardMarginStart, 24.dp),
@@ -163,7 +224,7 @@ fun TransparentBackground() {
 }
 
 @Composable
-fun ForecastWeather() {
+fun ForecastWeather(forecastWeather: List<DailyWeather>?) {
     Column {
         Text(
             text = "Próximas previsões",
@@ -176,14 +237,18 @@ fun ForecastWeather() {
             modifier = Modifier.padding(12.dp)
         )
 
-        for (i in 1..4) {
-            ForecastDay()
+        val calendar = Calendar.getInstance()
+        val ordinalDayOfTheWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
+
+        for (i in 0..3) {
+            val forecastDayOfTheWeek = (ordinalDayOfTheWeek + i) % 7
+            forecastWeather?.get(i)?.let { ForecastDay(it, forecastDayOfTheWeek) }
         }
     }
 }
 
 @Composable
-fun ForecastDay() {
+fun ForecastDay(dailyWeather: DailyWeather, dayReference: Int) {
     Row(
         modifier = Modifier.padding(vertical = 5.dp)
     ) {
@@ -213,18 +278,22 @@ fun ForecastDay() {
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-                ForecastDay(10, Modifier.align(Alignment.CenterStart))
-                ForecastMaximum(10, Modifier.align(Alignment.Center))
-                ForecastMinimum(10, Modifier.align(Alignment.CenterEnd))
+                ForecastDay(dayReference, Modifier.align(Alignment.CenterStart))
+                ForecastMaximum(dailyWeather.tempMax.roundToInt(), Modifier.align(Alignment.Center))
+                ForecastMinimum(
+                    dailyWeather.tempMin.roundToInt(),
+                    Modifier.align(Alignment.CenterEnd)
+                )
             }
         }
     }
 }
 
 @Composable
-fun ForecastDay(day: Int, modifier: Modifier) {
+fun ForecastDay(dayReference: Int, modifier: Modifier) {
+    val dayOfWeekName = WeekDay.from(dayReference).name.subSequence(0..2).toString()
     Text(
-        text = "Hoje",
+        text = dayOfWeekName,
         style = TextStyle(
             fontSize = 20.sp,
             fontFamily = FontFamily(Font(R.font.saira)),
@@ -237,12 +306,14 @@ fun ForecastDay(day: Int, modifier: Modifier) {
 
 @Composable
 fun ForecastMaximum(max: Int, modifier: Modifier) {
-    Row (modifier = modifier) {
+    Row(modifier = modifier) {
         Icon(
             painter = painterResource(id = R.drawable.arrow_narrow_up_icon),
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.height(24.dp).align(Alignment.CenterVertically)
+            modifier = Modifier
+                .height(24.dp)
+                .align(Alignment.CenterVertically)
         )
 
         Text(
@@ -259,12 +330,14 @@ fun ForecastMaximum(max: Int, modifier: Modifier) {
 
 @Composable
 fun ForecastMinimum(min: Int, modifier: Modifier) {
-    Row (modifier = modifier) {
+    Row(modifier = modifier) {
         Icon(
             painter = painterResource(id = R.drawable.arrow_narrow_down_icon),
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.height(24.dp).align(Alignment.CenterVertically)
+            modifier = Modifier
+                .height(24.dp)
+                .align(Alignment.CenterVertically)
         )
 
         Text(
@@ -279,10 +352,10 @@ fun ForecastMinimum(min: Int, modifier: Modifier) {
     }
 }
 
-@Preview
-@Composable
-fun DefaultPreview() {
-    MyApplicationTheme {
-        MainContent()
-    }
-}
+//@Preview
+//@Composable
+//fun DefaultPreview() {
+//    MyApplicationTheme {
+//        MainContent(viewState)
+//    }
+//}
