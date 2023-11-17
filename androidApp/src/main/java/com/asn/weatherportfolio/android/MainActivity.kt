@@ -1,5 +1,9 @@
 package com.asn.weatherportfolio.android
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -22,7 +26,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -36,22 +39,28 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.asn.weatherportfolio.model.CurrentWeather
 import com.asn.weatherportfolio.model.DailyWeather
 import com.asn.weatherportfolio.ui.UiState
 import com.asn.weatherportfolio.ui.WeatherCommonViewModel
+import com.google.android.gms.location.LocationServices
 import io.ktor.util.date.WeekDay
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.roundToInt
 
 class MainActivity : FragmentActivity() {
 
+    private val viewModel = WeatherCommonViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val viewModel = remember { WeatherCommonViewModel() }
             val viewState by viewModel.weatherStateFlow.collectAsState()
+            requestLocationPermission(this)
             MyApplicationTheme {
                 when (viewState) {
                     is UiState.Success -> {
@@ -59,12 +68,44 @@ class MainActivity : FragmentActivity() {
                             MainContent(this.currentWeather, this.forecastWeather)
                         }
                     }
+
                     is UiState.Loading -> {}
                     else -> {}
                 }
             }
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            99 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    setupLocationClient()
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupLocationClient() {
+        val locationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        lifecycleScope.launch {
+            val location = locationClient.lastLocation
+            location.addOnCompleteListener {
+                viewModel.updateLocation(location.result.latitude, location.result.longitude)
+            }
+        }
+    }
+}
+
+private fun requestLocationPermission(context: Activity) {
+    requestPermissions(context, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 99)
 }
 
 @Composable
@@ -74,7 +115,7 @@ fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeat
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        DinamicBackground()
+        DynamicBackground()
 
         Column(modifier = Modifier.padding(20.dp)) {
             WeatherNow(currentWeather)
@@ -84,7 +125,7 @@ fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeat
 }
 
 @Composable
-fun DinamicBackground() {
+fun DynamicBackground() {
     Image(
         painter = painterResource(id = R.drawable.cc453037a0e4830036d74baf41717fc9),
         contentDescription = "City background",
@@ -239,7 +280,10 @@ fun ForecastDay(dailyWeather: DailyWeather, dayReference: Int) {
             ) {
                 ForecastDay(dayReference, Modifier.align(Alignment.CenterStart))
                 ForecastMaximum(dailyWeather.tempMax.roundToInt(), Modifier.align(Alignment.Center))
-                ForecastMinimum(dailyWeather.tempMin.roundToInt(), Modifier.align(Alignment.CenterEnd))
+                ForecastMinimum(
+                    dailyWeather.tempMin.roundToInt(),
+                    Modifier.align(Alignment.CenterEnd)
+                )
             }
         }
     }
@@ -262,7 +306,7 @@ fun ForecastDay(dayReference: Int, modifier: Modifier) {
 
 @Composable
 fun ForecastMaximum(max: Int, modifier: Modifier) {
-    Row (modifier = modifier) {
+    Row(modifier = modifier) {
         Icon(
             painter = painterResource(id = R.drawable.arrow_narrow_up_icon),
             contentDescription = null,
@@ -286,7 +330,7 @@ fun ForecastMaximum(max: Int, modifier: Modifier) {
 
 @Composable
 fun ForecastMinimum(min: Int, modifier: Modifier) {
-    Row (modifier = modifier) {
+    Row(modifier = modifier) {
         Icon(
             painter = painterResource(id = R.drawable.arrow_narrow_down_icon),
             contentDescription = null,
