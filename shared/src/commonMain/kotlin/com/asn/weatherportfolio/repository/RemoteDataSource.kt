@@ -1,5 +1,6 @@
 package com.asn.weatherportfolio.repository
 
+import com.asn.weatherportfolio.model.GeocodeResponse
 import com.asn.weatherportfolio.model.WeatherResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -21,5 +22,10 @@ class RemoteDataSource {
     suspend fun getWeatherFromApi(latitude: Double, longitude: Double): WeatherResponse {
         val url = "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relativehumidity_2m,apparent_temperature,weathercode,cloudcover,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&timezone=America%2FSao_Paulo"
         return httpClient.get(url).body()
+    }
+
+
+    suspend fun getReverseGeocodingFromApi(latitude: Double, longitude: Double) {
+        TODO()
     }
 }
