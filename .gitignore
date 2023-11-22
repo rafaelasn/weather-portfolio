@@ -6,5 +6,6 @@ build
 captures
 .externalNativeBuild
 .cxx
+gradle.properties
 local.properties
 xcuserdata
