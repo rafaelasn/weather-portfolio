@@ -2,6 +2,7 @@ package com.asn.weatherportfolio.repository
 
 import com.asn.weatherportfolio.model.GeocodeResponse
 import com.asn.weatherportfolio.model.WeatherResponse
+import com.asn.weatherportfolio.utils.ApiKeys
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -25,7 +26,8 @@ class RemoteDataSource {
     }
 
 
-    suspend fun getReverseGeocodingFromApi(latitude: Double, longitude: Double) {
-        TODO()
+    suspend fun getReverseGeocodingFromApi(latitude: Double, longitude: Double): GeocodeResponse {
+        val url = "https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=${ApiKeys.GEOPIFY_KEY}"
+        return httpClient.get(url).body()
     }
 }
