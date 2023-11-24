@@ -12,4 +12,8 @@ class WeatherRepository() {
     suspend fun getWeatherFromRemote(latitude: Double, longitude: Double) = flow {
         emit(api.getWeatherFromApi(latitude, longitude))
     }.flowOn(Dispatchers.IO)
+
+    suspend fun getReverseGeocodingFromApi(latitude: Double, longitude: Double) = flow {
+        emit(api.getReverseGeocodingFromApi(latitude, longitude))
+    }.flowOn(Dispatchers.IO)
 }

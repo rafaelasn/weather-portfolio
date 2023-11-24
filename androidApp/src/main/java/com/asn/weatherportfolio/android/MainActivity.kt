@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -65,7 +66,7 @@ class MainActivity : FragmentActivity() {
                 when (viewState) {
                     is UiState.Success -> {
                         with(viewState as UiState.Success) {
-                            MainContent(this.currentWeather, this.forecastWeather)
+                            MainContent(this.currentWeather, this.forecastWeather, this.locationName)
                         }
                     }
 
@@ -109,7 +110,7 @@ private fun requestLocationPermission(context: Activity) {
 }
 
 @Composable
-fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeather>?) {
+fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeather>?, locationName: String) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +119,7 @@ fun MainContent(currentWeather: CurrentWeather?, forecastWeather: List<DailyWeat
         DynamicBackground()
 
         Column(modifier = Modifier.padding(20.dp)) {
-            WeatherNow(currentWeather)
+            WeatherNow(currentWeather, locationName)
             ForecastWeather(forecastWeather)
         }
     }
@@ -134,7 +135,7 @@ fun DynamicBackground() {
 }
 
 @Composable
-fun WeatherNow(currentWeather: CurrentWeather?) {
+fun WeatherNow(currentWeather: CurrentWeather?, locationName: String) {
     Column {
 
         Row(Modifier.padding(8.dp)) {
@@ -145,7 +146,7 @@ fun WeatherNow(currentWeather: CurrentWeather?) {
             )
 
             Text(
-                text = "Fulanópolis, Nárnia",
+                text = locationName,
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontFamily = FontFamily(Font(R.font.saira)),
@@ -248,18 +249,38 @@ fun ForecastWeather(forecastWeather: List<DailyWeather>?) {
 }
 
 @Composable
+fun ForecastDayIcon(weatherCode: Int) {
+
+    val rainCodes = listOf(61, 63, 65, 66, 67)
+    val heavyRainCodes = listOf(80, 81, 82)
+    val snowCodes = listOf(71, 73, 75, 77, 85, 86)
+    val thunderCodes = listOf(95, 96, 99)
+    val clearSkyCodes = listOf(0, 1, 2, 3)
+
+    val painter : Painter = when (weatherCode) {
+        in rainCodes -> painterResource(id = R.drawable.cloud_rain_icon);
+        in heavyRainCodes -> painterResource(id = R.drawable.cloud_rain_icon);
+        in snowCodes -> painterResource(id = R.drawable.cloud_snowfall_icon);
+        in clearSkyCodes -> painterResource(id = R.drawable.sun_icon);
+        in thunderCodes -> painterResource(id = R.drawable.cloud_storm_icon)
+        else -> painterResource(id = R.drawable.cloud_sun_icon)
+    }
+    Icon(
+        painter = painter,
+        tint = Color.White,
+        contentDescription = null,
+        modifier = Modifier
+            .width(54.dp)
+            .height(54.dp)
+    )
+}
+
+@Composable
 fun ForecastDay(dailyWeather: DailyWeather, dayReference: Int) {
     Row(
         modifier = Modifier.padding(vertical = 5.dp)
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.sun_icon),
-            tint = Color.White,
-            contentDescription = null,
-            modifier = Modifier
-                .width(54.dp)
-                .height(54.dp)
-        )
+        ForecastDayIcon(dailyWeather.weatherCode)
 
         Spacer(modifier = Modifier.width(8.dp))
 
