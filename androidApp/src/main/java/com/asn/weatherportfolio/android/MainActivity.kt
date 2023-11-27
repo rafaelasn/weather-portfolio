@@ -50,12 +50,14 @@ import com.asn.weatherportfolio.ui.WeatherCommonViewModel
 import com.google.android.gms.location.LocationServices
 import io.ktor.util.date.WeekDay
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
+import org.koin.core.parameter.parametersOf
 import java.util.Calendar
 import kotlin.math.roundToInt
 
-class MainActivity : FragmentActivity() {
+class MainActivity() : FragmentActivity() {
 
-    private val viewModel = WeatherCommonViewModel()
+    private val viewModel: WeatherCommonViewModel by inject { parametersOf(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
