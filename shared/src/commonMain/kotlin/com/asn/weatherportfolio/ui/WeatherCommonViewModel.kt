@@ -7,8 +7,7 @@ import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class WeatherCommonViewModel() : ViewModel() {
-    private val repository = WeatherRepository()
+class WeatherCommonViewModel(private val repository: WeatherRepository) : ViewModel() {
 
     private var lastLocation: Location? = null
     private var dailyWeather: List<DailyWeather>? = null
@@ -17,8 +16,8 @@ class WeatherCommonViewModel() : ViewModel() {
 
     var weatherStateFlow: MutableStateFlow<UiState?> = MutableStateFlow(null)
 
-    fun getWeather() {
-        weatherStateFlow.value = UiState.Loading
+    private fun getWeather() {
+        checkLoading()
         viewModelScope.launch {
             if (lastLocation != null) {
                 repository.getWeatherFromRemote(
@@ -49,6 +48,11 @@ class WeatherCommonViewModel() : ViewModel() {
         }
     }
 
+    private fun checkLoading() {
+        if (lastLocation == null || currentWeather == null || locationName == "") {
+            weatherStateFlow.value = UiState.Loading
+        }
+    }
     fun updateLocation(latitude: Double, longitude: Double) {
         lastLocation = Location(latitude, longitude)
         getWeather()

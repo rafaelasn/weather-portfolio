@@ -43,6 +43,8 @@ android {
     }
 }
 
+val koin = "3.2.0"
+
 dependencies {
     implementation(project(":shared"))
     implementation("androidx.compose.ui:ui:1.4.3")
@@ -58,4 +60,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("io.insert-koin:koin-core:${koin}")
+    implementation("io.insert-koin:koin-android:${koin}")
 }
