@@ -374,11 +374,3 @@ fun ForecastMinimum(min: Int, modifier: Modifier) {
         )
     }
 }
-
-//@Preview
-//@Composable
-//fun DefaultPreview() {
-//    MyApplicationTheme {
-//        MainContent(viewState)
-//    }
-//}
