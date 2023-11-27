@@ -27,6 +27,8 @@ kotlin {
     }
 
     val ktorVersion = "2.3.5"
+    val koin = "3.2.0"
+
 
     sourceSets {
         val commonMain by getting {
@@ -38,6 +40,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.insert-koin:koin-core:3.2.0")
                 api("dev.icerock.moko:mvvm-compose:0.16.1")
+                api("io.insert-koin:koin-core:${koin}")
+                api("io.insert-koin:koin-test:${koin}")
             }
         }
         val commonTest by getting {
